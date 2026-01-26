@@ -34,7 +34,7 @@ fn fs_main() -> @location(0) vec4<f32> {
 }
 ```
 
-### 2. 画圆
+### 2. 距离场 (SDF) 画圆
 
 <iframe src="./assets/html/2-Circle.html" width="640px" height="480px" scrolling="no"></iframe>
 
@@ -97,8 +97,46 @@ fn fs_main(@builtin(position) coord: vec4f) -> @location(0) vec4<f32> {
 
 [新窗口演示](./assets/html/3-LinearGradient.html)
 
+```rust
+// 待我整理...
+```
+
 ### 中心发散
 
 <iframe src="./assets/html/4-CenterDivergence.html" width="640px" height="480px" scrolling="no"></iframe>
 
 [新窗口演示](./assets/html/4-CenterDivergence.html)
+
+```rust
+// 待我整理...
+```
+
+### Lambertian漫反射模型
+
+<iframe src="./assets/html/5-Lambertian.html" width="640px" height="480px" scrolling="no"></iframe>
+
+[新窗口演示](./assets/html/5-Lambertian.html)
+
+```rust
+// 待我整理...
+```
+
+### Phong光照模型
+
+<iframe src="./assets/html/6-Phong.html" width="640px" height="480px" scrolling="no"></iframe>
+
+[新窗口演示](./assets/html/6-Phong.html)
+
+```rust
+// 待我整理...
+```
+
+### 阴影
+
+<iframe src="./assets/html/7-Shadow.html" width="640px" height="480px" scrolling="no"></iframe>
+
+[新窗口演示](./assets/html/7-Shadow.html)
+
+```rust
+// 待我整理...
+```
