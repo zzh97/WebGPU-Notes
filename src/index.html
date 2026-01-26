@@ -38,7 +38,8 @@
             background-color: #4CAF50;
             color: white;
             border-radius: 4px;
-            text-decoration: none; /* 去掉默认下划线 */
+            text-decoration: none;
+            /* 去掉默认下划线 */
             transition: background 0.3s;
         }
 
@@ -76,9 +77,9 @@
                 return hljs.highlightAuto(code).value;
             }
         });
-        const renderer = new marked.Renderer(); 
+        const renderer = new marked.Renderer();
         // 重写 link 方法 
-        renderer.link = function(o) { return `<a href="${o.href}" target="_blank" rel="noopener noreferrer">${o.text}</a>`; }; 
+        renderer.link = function (o) { return `<a href="${o.href}" target="_blank" rel="noopener noreferrer">${o.text}</a>`; };
         // 使用自定义 renderer 
         marked.setOptions({ renderer });
         // 读取并渲染 md 文件

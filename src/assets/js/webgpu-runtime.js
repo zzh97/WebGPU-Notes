@@ -1,0 +1,132 @@
+function runShaderByUrl(url = getLastPathNameWithWGSL()) {
+    fetch(url)
+        .then(response => response.text())
+        .then(text => {
+            runShaderInWebGPU(text)
+        })
+        .catch(err => console.error(err));
+}
+
+async function runShaderInWebGPU(shaderCode) {
+    const canvas = document.getElementById('canvas');
+    autoResizeCanvas(canvas);
+    // 检查浏览器是否支持WebGPU
+    if (!navigator.gpu) {
+        alert("WebGPU 不被此浏览器支持");
+        return;
+    }
+    /** GPU适配器: 它会帮你挑选GPU设备 */
+    const adapter = await navigator.gpu.requestAdapter();
+    /** GPU设备: 所有的GPU资源都从属于它 */
+    const device = await adapter.requestDevice();
+    /** WebGPU上下文 */
+    const context = canvas.getContext('webgpu');
+    /** 首选的canvas格式 */
+    const format = navigator.gpu.getPreferredCanvasFormat();
+    context.configure({ device, format }); // 配置WebGPU上下文
+
+    // 1️⃣ 准备顶点数据（三个点，二维坐标）
+    const vertices = new Float32Array([
+        0.0, 0.5,
+        -0.5, -0.5,
+        0.5, -0.5,
+    ]);
+    // 2️⃣ 创建 GPU Buffer，用来存顶点数据
+    const vertexBuffer = device.createBuffer({
+        size: vertices.byteLength,
+        usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+    });
+    // 把 JS 内存中的数据拷贝到 GPU
+    device.queue.writeBuffer(vertexBuffer, 0, vertices);
+    // 3️⃣ 定义顶点布局（非常关键）
+    const vertexLayout = {
+        arrayStride: 2 * 4, // 每个顶点占 2 个 f32
+        attributes: [
+            {
+                shaderLocation: 0, // 对应 WGSL 中的 @location(0)
+                offset: 0,
+                format: 'float32x2',
+            },
+        ],
+    };
+
+    /** 着色器模块 */
+    const shaderModule = device.createShaderModule({ code: shaderCode });
+    /** 渲染管线 */
+    const pipeline = device.createRenderPipeline({
+        layout: 'auto', // 自动布局
+        vertex: { // 顶点着色器配置
+            module: shaderModule,
+            entryPoint: 'vs_main',
+            buffers: [vertexLayout],
+        },
+        fragment: { // 片段着色器配置
+            module: shaderModule,
+            entryPoint: 'fs_main',
+            targets: [{ format }]
+        }
+    });
+
+    // 创建 Uniform Buffer
+    const uniformBuffer = device.createBuffer({
+        size: 16, // 4 * 4 bytes，虽然其实我们只有3*4，但基于Std140 布局规范(为了内存对齐)，结构体最小为16字节
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    /** 绑定组 */
+    const bindGroup = device.createBindGroup({
+        layout: pipeline.getBindGroupLayout(0), // 获取绑定组布局
+        entries: [{ binding: 0, resource: { buffer: uniformBuffer } }] // 绑定缓冲区
+    });
+
+    /** 帧渲染函数 */
+    function frame() {
+        const time = performance.now() / 1000; // 获取当前时间（秒）
+        device.queue.writeBuffer(uniformBuffer, 0, new Float32Array([canvas.width, canvas.height, time])); // 写入统一变量
+        /** 命令编码器 */
+        const commandEncoder = device.createCommandEncoder();
+        /** 渲染通道 */
+        const passEncoder = commandEncoder.beginRenderPass({
+            colorAttachments: [{
+                view: context.getCurrentTexture().createView(),
+                loadOp: 'clear',
+                storeOp: 'store'
+            }] // 颜色附件配置
+        });
+        passEncoder.setPipeline(pipeline); // 设置渲染管线
+        passEncoder.setBindGroup(0, bindGroup); // 设置绑定组
+        passEncoder.setVertexBuffer(0, vertexBuffer);
+        passEncoder.draw(3); // 绘制3个顶点
+        passEncoder.end(); // 结束渲染通道
+        device.queue.submit([commandEncoder.finish()]); // 提交命令
+        requestAnimationFrame(frame); // 请求下一帧
+    }
+    frame(); // 开始渲染循环
+}
+
+function autoResizeCanvas(canvas) {
+    function resize() {
+        const parent = canvas.parentElement;
+        if (parent) {
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+        }
+    }
+    resize();
+    // 如果父级大小可能变化，监听窗口 resize
+    window.addEventListener('resize', resize);
+}
+
+function getLastPathNameWithWGSL() {
+    // 获取当前 URL 的路径部分
+    const urlObj = new URL(window.location.href);
+    const pathParts = urlObj.pathname.split('/').filter(Boolean);
+    let lastName = pathParts.pop() || '';
+  
+    // 去掉原来的扩展名（如果有）
+    const baseName = lastName.replace(/\.[^/.]+$/, "");
+  
+    // 拼接新的扩展名
+    return baseName + ".wgsl";
+}
+  
+  

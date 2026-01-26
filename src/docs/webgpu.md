@@ -91,3 +91,14 @@ fn fs_main(@builtin(position) coord: vec4f) -> @location(0) vec4<f32> {
 }
 ```
 
+### 线性渐变
+
+<iframe src="./assets/html/3-LinearGradient.html" width="640px" height="480px" scrolling="no"></iframe>
+
+[新窗口演示](./assets/html/3-LinearGradient.html)
+
+### 中心发散
+
+<iframe src="./assets/html/4-CenterDivergence.html" width="640px" height="480px" scrolling="no"></iframe>
+
+[新窗口演示](./assets/html/4-CenterDivergence.html)
