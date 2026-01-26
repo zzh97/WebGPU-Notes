@@ -6,8 +6,8 @@ struct Uniforms { // 定义统一变量结构体
 @group(0) @binding(0) var<uniform> u: Uniforms; // 声明统一变量
 
 fn map(p: vec3f) -> f32 { // 定义场景距离场函数
-    let sphere = length(p - vec3f(0.0, abs(sin(u.time)) * 0.8, 0.0)) - 0.6; // 计算球体距离场
-    let plane = p.y + 0.6; // 计算平面距离场
+    let sphere = length(p - vec3f(0.0, abs(sin(u.time*2.0)) * 1.0, 0.0)) - 0.8; // 计算球体距离场
+    let plane = p.y + 0.8; // 计算平面距离场
     return min(sphere, plane); // 返回最小距离
 }
 

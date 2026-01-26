@@ -32,10 +32,12 @@ fn vs_main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4<f32> {
 // 定义 Fragment Shader 的入口函数
 @fragment
 fn fs_main(@builtin(position) coord: vec4f) -> @location(0) vec4<f32> {
+    let pulse =  0.3 * sin(u.time*1.5);
     var color = vec3f(0.0, 0.0, 0.0); // 背景色
     let r = 0.5; // 球体半径
     var uv = (coord.xy * 2.0 - u.res) / min(u.res.y, u.res.x);
     uv.y = -uv.y; // 翻转Y轴
+    uv.x += pulse; // 左右摆动
     let p = vec3f(uv, 0.0);
     // 计算距离
     let d = sdfSphere(p, r);

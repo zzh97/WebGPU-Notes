@@ -59,7 +59,7 @@ fn fs_main(@builtin(position) coord: vec4f) -> @location(0) vec4<f32> {
     for(var i = 0; i < 64; i++) {
         let p = ro + rd * t; // 沿光线走 t 距离后的点
         // 计算距离
-        let r = 0.5;
+        let r = 0.6;
         let d = sdfSphere(p, r);
         // 点在球体内
         if (d < 0.001) {
