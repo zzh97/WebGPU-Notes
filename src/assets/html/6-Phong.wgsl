@@ -43,7 +43,7 @@ fn vs_main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4<f32> {
 // 定义 Fragment Shader 的入口函数
 @fragment
 fn fs_main(@builtin(position) coord: vec4f) -> @location(0) vec4<f32> {
-    let pulse = 0.2 + 0.3 * abs(sin(u.time*1.5));
+    let pulse = 0.2 + 0.3 * sin(u.time*2);
     // 初始化背景色
     var color = vec3f(0.0, 0.0, 0.0);
     // 计算UV坐标
@@ -51,7 +51,7 @@ fn fs_main(@builtin(position) coord: vec4f) -> @location(0) vec4<f32> {
     uv.y = -uv.y; // 翻转Y轴
 
     // 1. 定义光线起点 (相机位置) 和 方向
-    let ro = vec3f(0.0, 0.0, 2.0); // Camera at Z=2
+    let ro = vec3f(pulse, 0.0, 2.0); // Camera at Z=2
     let rd = normalize(vec3f(uv, -1.0)); // Ray direction pointing into the screen
 
     // 2. 简单的 Ray Marching (光线步进)
@@ -59,12 +59,12 @@ fn fs_main(@builtin(position) coord: vec4f) -> @location(0) vec4<f32> {
     for(var i = 0; i < 64; i++) {
         let p = ro + rd * t; // 沿光线走 t 距离后的点
         // 计算距离
-        let d = sdfSphere(p, pulse);
+        let r = 0.5;
+        let d = sdfSphere(p, r);
         // 点在球体内
         if (d < 0.001) {
             if (d < 0.001) {
-            let normal = getNormal(p, pulse); // 注意：r 应该对应当前的 pulse
-            
+            let normal = getNormal(p, r);
             // 1. 定义光环境
             let lightPos = vec3f(2.0, 2.0, 2.0);
             let lightDir = normalize(lightPos - p);
