@@ -2,7 +2,7 @@
 
 <iframe src="./assets/html/1-Triangle.html" scrolling="no"></iframe>
 
-[窗口演示](./assets/html/1-Triangle.html)
+[窗口演示](./assets/html/1-Triangle.html) [查看详情](#/1)
 
 ### 2. 距离场 (SDF) 画圆
 

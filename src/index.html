@@ -79,24 +79,48 @@
                 return hljs.highlightAuto(code).value;
             }
         });
-        const renderer = new marked.Renderer();
-        // 重写 link 方法 
-        renderer.link = function (o) { return `<a href="${o.href}" target="_blank" rel="noopener noreferrer">${o.text}</a>`; };
-        // 使用自定义 renderer 
-        marked.setOptions({ renderer });
-        // 读取并渲染 md 文件
-        fetch('./docs/webgpu.md') // 这里换成你的 md 文件路径
-            .then(response => response.text())
-            .then(text => {
-                // 使用 marked 将 Markdown 转换为 HTML
-                document.getElementById('content').innerHTML = marked.parse(text);
+        // const renderer = new marked.Renderer();
+        // // 重写 link 方法 
+        // renderer.link = function (o) { return `<a href="${o.href}" target="_blank" rel="noopener noreferrer">${o.text}</a>`; };
+        // // 使用自定义 renderer 
+        // marked.setOptions({ renderer });
+        function parseMarkdown(url = './docs/webgpu.md') {
+            // 读取并渲染 md 文件
+            fetch(url) // 这里换成你的 md 文件路径
+                .then(response => response.text())
+                .then(text => {
+                    // 使用 marked 将 Markdown 转换为 HTML
+                    document.getElementById('content').innerHTML = marked.parse(text);
 
-                // 对所有代码块执行高亮
-                document.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                });
-            })
-            .catch(err => console.error(err));
+                    // 对所有代码块执行高亮
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                })
+                .catch(err => console.error(err));
+        }
+
+        // 1. 定义路由表
+        const routes = {
+            '#/': './docs/webgpu.md',
+            '#/1': './docs/details/1-Triangle.md',
+        };
+
+        // 2. 路由渲染函数
+        function router() {
+            const content = document.getElementById('content');
+            // 获取当前的 hash，如果没有则默认跳转到首页
+            const path = window.location.hash || '#/';
+            const url = routes[path];
+            // 根据 hash 渲染对应的 HTML
+            content.innerHTML = parseMarkdown(url);
+        }
+
+        // 3. 监听 hash 变化
+        window.addEventListener('hashchange', router);
+
+        // 4. 页面首次加载时执行一次
+        window.addEventListener('load', router);
     </script>
 </body>
 
