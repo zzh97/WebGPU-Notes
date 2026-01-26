@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <title>WebGPU-Notes</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        iframe {
+            border: none;
+            overflow: hidden;
+        }
+    </style>
+    <!-- 引入 marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <div id="content"></div>
+    <script>
+        // 读取并渲染 md 文件
+        fetch('./docs/webgpu.md') // 这里换成你的 md 文件路径
+            .then(response => response.text())
+            .then(text => {
+                // 使用 marked 将 Markdown 转换为 HTML
+                document.getElementById('content').innerHTML = marked.parse(text);
+            })
+            .catch(err => console.error(err));
+    </script>
+</body>
+
+</html>
