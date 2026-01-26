@@ -31,6 +31,20 @@
             border: none;
             overflow: hidden;
         }
+
+        a {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            text-decoration: none; /* 去掉默认下划线 */
+            transition: background 0.3s;
+        }
+
+        a:hover {
+            background-color: #45a049;
+        }
     </style>
     <!-- 引入 marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -62,6 +76,11 @@
                 return hljs.highlightAuto(code).value;
             }
         });
+        const renderer = new marked.Renderer(); 
+        // 重写 link 方法 
+        renderer.link = function(o) { return `<a href="${o.href}" target="_blank" rel="noopener noreferrer">${o.text}</a>`; }; 
+        // 使用自定义 renderer 
+        marked.setOptions({ renderer });
         // 读取并渲染 md 文件
         fetch('./docs/webgpu.md') // 这里换成你的 md 文件路径
             .then(response => response.text())

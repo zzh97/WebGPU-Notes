@@ -37,8 +37,10 @@
             return vec4<f32>(pulse, 0.0, 0.0, 1.0);
         }
     `;
+
     async function main() {
         const canvas = document.getElementById('canvas');
+        autoResizeCanvas(canvas);
         // 检查浏览器是否支持WebGPU
         if (!navigator.gpu) {
             console.error("WebGPU 不被此浏览器支持");
@@ -131,5 +133,19 @@
         }
         frame(); // 开始渲染循环
     }
+
+    function autoResizeCanvas(canvas) {
+        function resize() {
+            const parent = canvas.parentElement;
+            if (parent) {
+                canvas.width = parent.clientWidth;
+                canvas.height = parent.clientHeight;
+            }
+        }
+        resize();
+        // 如果父级大小可能变化，监听窗口 resize
+        window.addEventListener('resize', resize);
+    }
+
     main();
 </script>

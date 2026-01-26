@@ -2,6 +2,8 @@
 
 <iframe src="./assets/html/1-Triangle.html" width="640px" height="480px" scrolling="no"></iframe>
 
+[新窗口演示](./assets/html/1-Triangle.html)
+
 ```rust
 // 定义统一变量结构体
 struct Uniforms {
@@ -35,6 +37,8 @@ fn fs_main() -> @location(0) vec4<f32> {
 ### 2. 画圆
 
 <iframe src="./assets/html/2-Circle.html" width="640px" height="480px" scrolling="no"></iframe>
+
+[新窗口演示](./assets/html/2-Circle.html)
 
 ```rust
 // 定义统一变量结构体
@@ -71,7 +75,6 @@ fn vs_main(@builtin(vertex_index) idx: u32) -> @builtin(position) vec4<f32> {
 // 定义 Fragment Shader 的入口函数
 @fragment
 fn fs_main(@builtin(position) coord: vec4f) -> @location(0) vec4<f32> {
-    // 利用 time 让红色闪烁，这样 uniforms 就会被编译器视为“活跃”状态
     let pulse = 0.2 + 0.3 * abs(sin(u.time*1.5));
     // 初始化背景色
     var color = vec3f(0.05, 0.05, 0.1);
