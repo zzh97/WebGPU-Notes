@@ -101,6 +101,39 @@
             box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.3);
         }
 
+        dialog {
+            box-sizing: content-box;
+            padding: 2rem;
+            min-width: 50%;
+            width: fit-content;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 0.8rem 2.4rem rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(1rem);
+        }
+
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        #header {
+            position: sticky;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            height: 5rem;
+            background: #1a1a1a;
+        }
+
+        #search {
+            display: flex;
+            align-items: center;
+        }
+
         #content {
             margin: 3rem;
             padding: 2rem;
@@ -127,7 +160,30 @@
 </head>
 
 <body>
+    <header id="header">
+        <div></div>
+        <div id="search">
+            <input type="text" placeholder="搜索...">
+            <button style="margin-left: 0.5rem;">搜索</button>
+        </div>
+    </header>
     <div id="content"></div>
+    <dialog id="dialog">
+        <h2>搜索结果</h2>
+        <ul id="search-result">
+            <li><a href="#">WebGPU 简介</a></li>
+            <li><a href="#">WebGPU 基本概念</a></li>
+            <li><a href="#">WebGPU 编程模型</a></li>
+            <li><a href="#">WebGPU 工作组</a></li>
+            <li><a href="#">WebGPU 管线</a></li>
+            <li><a href="#">WebGPU 资源绑定</a></li>
+            <li><a href="#">WebGPU 资源管理</a></li>
+            <li><a href="#">WebGPU 着色器</a></li>
+            <li><a href="#">WebGPU 计算</a></li>
+            <li><a href="#">WebGPU 存储</a></li>
+        </ul>
+    </dialog>
+    <script src="./assets/js/utils.js"></script>
     <script>
         // 配置 marked 使用 highlight.js 
         marked.setOptions({
@@ -147,32 +203,29 @@
         // marked.setOptions({ renderer });
         function parseMarkdown(url = './docs/webgpu.md') {
             // 读取并渲染 md 文件
-            fetch(url) // 这里换成你的 md 文件路径
-                .then(response => response.text())
-                .then(text => {
-                    // 使用 marked 将 Markdown 转换为 HTML
-                    document.getElementById('content').innerHTML = marked.parse(text);
+            readMarkDown(url).then(text => {
+                // 使用 marked 将 Markdown 转换为 HTML
+                document.getElementById('content').innerHTML = marked.parse(text);
 
-                    // 对所有代码块执行高亮
-                    document.querySelectorAll('pre code').forEach((block) => {
-                        hljs.highlightElement(block);
-                    });
-                })
-                .catch(err => console.error(err));
+                // 对所有代码块执行高亮
+                document.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightElement(block);
+                });
+            })
         }
 
         // 1. 定义路由表
         const routes = {
-            '#/': './docs/webgpu.md',
-            '#/1': './docs/details/1-Triangle.md',
+            '#/docs/webgpu.md': './docs/webgpu.md',
+            '#/docs/details/1-Triangle.md': './docs/details/1-Triangle.md',
         };
 
         // 2. 路由渲染函数
         function router() {
             const content = document.getElementById('content');
             // 获取当前的 hash，如果没有则默认跳转到首页
-            const path = window.location.hash || '#/';
-            const url = routes[path];
+            const path = window.location.hash || '#/docs/webgpu.md';
+            const url = routes[path] || path.replace('#/', './');
             // 根据 hash 渲染对应的 HTML
             content.innerHTML = parseMarkdown(url);
         }
@@ -182,6 +235,52 @@
 
         // 4. 页面首次加载时执行一次
         window.addEventListener('load', router);
+
+        // 搜索功能
+        async function search(keyword) {
+            const mds = []
+            const targets = []
+            for (const key in routes) {
+                const url = routes[key];
+                const text = await readMarkDown(url);
+                const md = { url, text }
+                mds.push(md)
+            }
+            for (const md of mds) {
+                const text = md.text;
+                const results = getKeywordContext(text, keyword, 10)
+                for (const result of results) {
+                    const target = {...md, ...result }
+                    targets.push(target)
+                }
+            }
+            return targets;
+        }
+        const searchInput = document.querySelector('#search input');
+        const searchButton = document.querySelector('#search button');
+        const dialog = document.querySelector('#dialog');
+        const ul = document.querySelector('#search-result');
+        addEventListener('click', (event) => {
+            if (event.target === dialog) {
+                dialog.close();
+            }
+        });
+        searchButton.addEventListener('click', async () => {
+            const keyword = searchInput.value.trim();
+            if (keyword) {
+                dialog.showModal(); // showModal() 表示模态对话框
+                const mds = await search(keyword)
+                ul.innerHTML = '';
+                for (const md of mds) {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = md.url.replace('./', '#/');
+                    a.innerHTML =  `${md.url}: ${md.before}<b style="color: #f00;">${md.keyword}</b>${md.after}`;
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                }
+            }
+        });
     </script>
 </body>
 
