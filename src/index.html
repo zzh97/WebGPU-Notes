@@ -135,7 +135,7 @@
         }
 
         #content {
-            margin: 3rem;
+            margin: 1rem auto;
             padding: 2rem;
             max-width: 90rem;
             background: #252525;
@@ -145,6 +145,8 @@
     </style>
     <!-- 引入 marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 引入 GitHub Markdown CSS --> 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.css">
     <!-- 白天模式 -->
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/default.min.css"> -->
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js/styles/github.min.css"> -->
@@ -167,7 +169,7 @@
             <button style="margin-left: 0.5rem;">搜索</button>
         </div>
     </header>
-    <div id="content"></div>
+    <div id="content" class="markdown-body"></div>
     <dialog id="dialog">
         <h2>搜索结果</h2>
         <ul id="search-result">
