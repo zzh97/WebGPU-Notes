@@ -112,7 +112,7 @@
         }
 
         dialog {
-            box-sizing: content-box;
+            box-sizing: border-box;
             padding: 2rem;
             min-width: 50%;
             max-width: 80%;
@@ -197,6 +197,8 @@
             list-style: none;
             margin: 0;
             padding: 1rem;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         .toc-list a {
@@ -211,18 +213,24 @@
 
         /* 针对深层级的特殊样式 */
         .toc-list ul {
+            /* 去掉默认的小圆点 */
+            list-style: none;
             padding-left: 1.5rem;
             border-left: 1px solid #eee;
         }
 
-        .toc-list .active {
-            color: #fff !important;
+        /* 激活状态 */
+        .toc-list .toc-link.active {
+            color: #ff7b00 !important;
+        }
+
+        .toc-list .toc-link.active::after {
+            background: #ff7b00 !important;
         }
 
         #article {
             overflow-y: auto;
-            width: 100%;
-            height: 100%;
+            flex: 1;
         }
 
         #content {
@@ -280,6 +288,16 @@
     </dialog>
     <script src="./assets/js/utils.js"></script>
     <script>
+        // http://127.0.0.1:5500/src
+        // http://127.0.0.1:5500/src/
+        // http://127.0.0.1:5500/src/index.html
+        // http://127.0.0.1:5500/src/index.html#/docs/webgpu.md
+        // 重定向
+        if (!location.href.includes('index.html#/')) {
+            const url = location.href.replace(/\/src\/.*/, '/src/index.html#/docs/webgpu.md')
+            location.href = url
+        }
+
         // 配置 marked 使用 highlight.js 
         marked.setOptions({
             highlight: function (code, lang) {
@@ -338,27 +356,10 @@
         // renderer.link = function (o) { return `<a href="${o.href}" target="_blank" rel="noopener noreferrer">${o.text}</a>`; };
         // // 使用自定义 renderer 
         // marked.setOptions({ renderer });
-        async function parseMarkdown(url = './docs/webgpu.md') {
-            // 读取并渲染 md 文件
-            const text = await readMarkDown(url);
-            // 使用 marked 将 Markdown 转换为 HTML
-            document.getElementById('content').innerHTML = marked.parse(text);
-
-            // 对所有代码块执行高亮
-            content.querySelectorAll("pre code").forEach(block => {
-                // 如果 className 包含 "language-wgsl"，改成 "language-rust"
-                if (block.className.includes("language-wgsl")) {
-                    block.className = block.className.replace("language-wgsl", "language-rust");
-                }
-                // 然后调用 highlight.js
-                hljs.highlightElement(block);
-            });
-        }
 
         const content = document.getElementById('content');
         // 1. 定义路由表
         const routes = {
-            '#/': './docs/webgpu.md',
             '#/docs/webgpu.md': './docs/webgpu.md',
             '#/docs/details/1-Triangle.md': './docs/details/1-Triangle.md',
             '#/docs/details/ai.md': './docs/details/ai.md',
@@ -371,7 +372,7 @@
             const path = window.location.hash || '#/docs/webgpu.md';
             const url = routes[path] || path.replace('#/', './');
             // 根据 hash 渲染对应的 HTML
-            await parseMarkdown(url);
+            await parseMarkdown(url, content);
             const qs = getQueryParam()
             if (qs.id) {
                 const element = document.getElementById(qs.id);
@@ -385,7 +386,7 @@
             }
 
             // 生成目录
-            const headers = Array.from(document.querySelectorAll('h1, h2, h3, h4')).map(h => ({
+            const headers = Array.from(content.querySelectorAll('h1, h2, h3, h4')).map(h => ({
                 level: parseInt(h.tagName.replace('H', '')),
                 text: h.innerText,
                 id: h.id
@@ -399,7 +400,6 @@
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const currentId = entry.target.id;
-                        console.log(currentId);
 
                         // 1. 点亮目录项样式
                         document.querySelectorAll('.toc-link').forEach(link => {
@@ -477,7 +477,8 @@
                     const url = md.url.replace('./', '#/')
                     const idKey = md.anchor.replace(/#/g, '').trim().toLowerCase();
                     const id = getId(idKey)
-                    a.href = `${url}?id=${id}&keyword=${keyword}`;
+                    const fullUrl = `/src/index.html${url}`
+                    a.href = `${fullUrl}?id=${id}&keyword=${keyword}`;
                     const res = getKeywordContext(md.text, keyword, 15)[0]
                     // const text = highlightKeyword(md.text, keyword)
                     const text = `${res.before}<span class="highlight">${res.keyword}</span>${res.after}`

@@ -25,6 +25,36 @@ function readMarkDown(url = './docs/webgpu.md') {
     })
 }
 
+const htmlCache = new Map();
+let lastKey = "";
+async function parseMarkdown(url = './docs/webgpu.md', content = document.getElementById("content")) {
+    const key = url.split('?')[0]; // 缓存 key
+    if (lastKey === key) {
+        return;
+    }
+    console.log(`解析: ${url}`);
+    lastKey = key;
+    if (htmlCache.has(key)) {
+        content.innerHTML = htmlCache.get(key);
+        return;
+    }
+    // 读取并渲染 md 文件
+    const text = await readMarkDown(url);
+    // 使用 marked 将 Markdown 转换为 HTML
+    content.innerHTML = marked.parse(text);
+    // 对所有代码块执行高亮
+    content.querySelectorAll("pre code").forEach(block => {
+        // 如果 className 包含 "language-wgsl"，改成 "language-rust"
+        if (block.className.includes("language-wgsl")) {
+            block.className = block.className.replace("language-wgsl", "language-rust");
+        }
+        // 然后调用 highlight.js
+        hljs.highlightElement(block);
+    });
+    // 缓存 HTML
+    htmlCache.set(key, content.innerHTML);
+}
+
 /**
  * 获取关键词的上下文
  * @param {string} text - 原始文本
