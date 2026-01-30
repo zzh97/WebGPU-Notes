@@ -10,6 +10,8 @@
 
 [窗口演示](./docs/assets/html/2-Circle.html)
 
+点到圆心的距离 - 半径 = $\sqrt{(x-x_0)^2 + (y-y_0)^2} - r$
+
 ### 线性渐变
 
 <iframe src="./assets/html/3-LinearGradient.html" scrolling="no"></iframe>

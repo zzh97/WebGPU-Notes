@@ -255,6 +255,9 @@
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
     <!-- and it's easy to individually load additional languages -->
     <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/languages/rust.min.js"></script>
+    <!-- 引入 katex -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 </head>
 
 <body>
@@ -301,6 +304,35 @@
             }
         };
         marked.use({ renderer });
+        // 1. 定义扩展逻辑
+        const katexExtension = {
+            name: 'math',
+            level: 'inline', // 处理行内公式
+            start(src) { return src.indexOf('$'); }, // 找到 $ 开始处理
+            tokenizer(src) {
+                // 匹配 $$公式$$ (块级) 或 $公式$ (行内)
+                const rule = /^(\$\$|内容)([\s\S]*?)\1/;
+                // 注意：这里为了严谨，通常使用更复杂的正则，以下为简化示意：
+                const match = src.match(/^\$\$([\s\S]+?)\$\$/) || src.match(/^\$([^$\n]+?)\$/);
+                if (match) {
+                    return {
+                        type: 'math',
+                        raw: match[0],
+                        text: match[1].trim(),
+                        displayMode: match[0].startsWith('$$') // 是否为块级公式
+                    };
+                }
+            },
+            renderer(token) {
+                return katex.renderToString(token.text, {
+                    displayMode: token.displayMode,
+                    throwOnError: false
+                });
+            }
+        };
+
+        // 2. 告知 Marked 使用该扩展
+        marked.use({ extensions: [katexExtension] });
         // const renderer = new marked.Renderer();
         // // 重写 link 方法 
         // renderer.link = function (o) { return `<a href="${o.href}" target="_blank" rel="noopener noreferrer">${o.text}</a>`; };
