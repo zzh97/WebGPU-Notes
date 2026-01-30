@@ -1,0 +1,20 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "启动 Chrome 调试",
+            "type": "chrome",
+            "request": "launch",
+            "disableNetworkCache": false,
+            "url": "http://127.0.0.1:5500/src/index.html", // 必须匹配 Live Server 的地址
+            "webRoot": "${workspaceFolder}",           // 告诉 VS Code 源码在本地哪里
+            "sourceMaps": true,                         // 确保代码映射开启
+            "skipFiles": [
+                "*.dll.js" //跳过.js文件的调试,避免调试堆栈进入js文件
+            ],
+        },
+    ]
+}
