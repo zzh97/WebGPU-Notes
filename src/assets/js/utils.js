@@ -119,8 +119,32 @@ function highlightKeyword(sentence, keyword) {
     return sentence.replace(regex, '<span class="highlight">$1</span>');
 }
 
+function clearHighlights(content = document.getElementById("content")) {
+    // 获取所有用于高亮的 span 标签
+    // 建议给高亮的 span 加上一个特定的 class，比如 'highlight-span'，这样选择更精确
+    const highlights = content.querySelectorAll('span[style*="background: yellow"]');
+    
+    // 使用倒序遍历
+    // 因为移除节点后，DOM 树会发生变化，倒序可以避免索引错位问题
+    for (let i = highlights.length - 1; i >= 0; i--) {
+        const span = highlights[i];
+        const parent = span.parentNode;
+        
+        // 将 span 替换为其内部的文本节点
+        // parent.replaceChild(newChild, oldChild)
+        parent.replaceChild(document.createTextNode(span.textContent), span);
+        
+        // normalize() 方法用于合并相邻的文本节点
+        // 例如：Hello <span>World</span> -> Hello World
+        // 如果不合并，可能会变成两个文本节点 "Hello " 和 "World"
+        parent.normalize();
+    }
+}
+
 
 function highlightKeywords(keyword, content = document.getElementById("content")) {
+    clearHighlights(content)
+
     const walker = document.createTreeWalker(
         content,
         NodeFilter.SHOW_TEXT, // 只看文本
