@@ -161,4 +161,68 @@ function getQueryParam() {
     return obj;
 }
 
+function generateNestedTOC(headers) {
+    if (headers.length === 0) return '';
 
+    let html = '<ul class="toc-list">';
+    let currentLevel = headers[0].level;
+    let stack = []; // 用来管理 <ul> 的嵌套深度
+
+    headers.forEach((header, index) => {
+        if (header.level > currentLevel) {
+            // 1. 等级变大（例如 h1 -> h2）：开启新的子列表
+            const diff = header.level - currentLevel;
+            for (let i = 0; i < diff; i++) {
+                html += '<ul><li>';
+                stack.push('</ul></li>'); // 记录需要闭合的标签
+            }
+        } else if (header.level < currentLevel) {
+            // 2. 等级变小（例如 h3 -> h2）：闭合之前的子列表
+            const diff = currentLevel - header.level;
+            for (let i = 0; i < diff; i++) {
+                const a = stack.pop();
+                // TODO: 不知道为什么会有undefined
+                if (a) {
+                    html += a;
+                }
+            }
+            html += '</li><li>';
+        } else {
+            // 3. 等级相同：直接换行
+            if (index !== 0) html += '</li><li>';
+        }
+
+        // 获取当前 # 后的路径部分，例如: /docs/details/gpu.md
+        const currentHashPath = window.location.hash.split('?')[0];
+        // 生成链接：保持 hash 路径不变，仅修改参数
+        html += `<a href="${currentHashPath}?id=${header.id}" class="toc-link" data-id="${header.id}">${header.text}</a>`;
+        currentLevel = header.level;
+    });
+
+    // 最后闭合所有剩余的标签
+    while (stack.length > 0) {
+        html += stack.pop();
+    }
+    html += '</li></ul>';
+
+    return html;
+}
+
+/**
+ * 保持 Hash 路径不变，仅替换参数部分
+ * @param {string} newId - 新的标题 ID
+ */
+function switchUrlId(newId) {
+    // 1. 分解当前 Hash，例如 ["#/docs/details/gpu.md", "id=9&keyword=gpu"]
+    const [path, queryString] = window.location.hash.split('?');
+
+    // 2. 创建一个干净的参数对象，只设置 id
+    const newParams = new URLSearchParams();
+    newParams.set('id', newId);
+
+    // 3. 拼装成新的 Hash 字符串
+    const newHash = `${path}?${newParams.toString()}`;
+
+    // 4. 使用 history 替换，不触发页面刷新，不产生多余历史记录
+    window.history.replaceState(null, '', newHash);
+}

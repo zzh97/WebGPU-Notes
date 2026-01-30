@@ -170,6 +170,7 @@
             width: 100%;
             height: 5rem;
             background: #1a1a1a;
+            z-index: 1;
         }
 
         #search {
@@ -178,13 +179,54 @@
         }
 
         #main {
+            display: flex;
+            width: 100%;
+            height: calc(100% - 5rem);
+        }
+
+        #toc-container {
+            overflow-y: auto;
+            position: sticky;
+            max-width: 30rem;
+            height: 100%;
+            background: rgba(70, 50, 60, 0.7);
+            backdrop-filter: blur(1rem);
+        }
+
+        .toc-list {
+            list-style: none;
+            margin: 0;
+            padding: 1rem;
+        }
+
+        .toc-list a {
+            text-decoration: none;
+            font-size: 1.4rem;
+            line-height: 2;
+        }
+
+        .toc-list a:hover {
+            color: #007bff;
+        }
+
+        /* 针对深层级的特殊样式 */
+        .toc-list ul {
+            padding-left: 1.5rem;
+            border-left: 1px solid #eee;
+        }
+
+        .toc-list .active {
+            color: #fff !important;
+        }
+
+        #article {
             overflow-y: auto;
             width: 100%;
             height: 100%;
         }
 
         #content {
-            margin: 1rem auto;
+            margin: 0 auto;
             padding: 2rem;
             max-width: 90rem;
             background: #252525;
@@ -224,22 +266,14 @@
         </div>
     </header>
     <main id="main">
-        <div id="content" class="markdown-body"></div>
+        <nav id="toc-container"></nav>
+        <article id="article">
+            <div id="content" class="markdown-body"></div>
+        </article>
     </main>
     <dialog id="dialog">
         <h2>搜索结果</h2>
-        <ul id="search-result">
-            <li><a href="#">WebGPU 简介</a></li>
-            <li><a href="#">WebGPU 基本概念</a></li>
-            <li><a href="#">WebGPU 编程模型</a></li>
-            <li><a href="#">WebGPU 工作组</a></li>
-            <li><a href="#">WebGPU 管线</a></li>
-            <li><a href="#">WebGPU 资源绑定</a></li>
-            <li><a href="#">WebGPU 资源管理</a></li>
-            <li><a href="#">WebGPU 着色器</a></li>
-            <li><a href="#">WebGPU 计算</a></li>
-            <li><a href="#">WebGPU 存储</a></li>
-        </ul>
+        <ul id="search-result"></ul>
     </dialog>
     <script src="./assets/js/utils.js"></script>
     <script>
@@ -310,13 +344,43 @@
             if (qs.id) {
                 const element = document.getElementById(qs.id);
                 if (element) {
-                    if (qs.keyword) {                        
+                    if (qs.keyword) {
                         highlightKeywords(qs.keyword, content);
                     }
                     // 滚动到高亮位置
                     element.scrollIntoView({ behavior: 'smooth', block: "start" });
                 }
             }
+
+            // 生成目录
+            const headers = Array.from(document.querySelectorAll('h1, h2, h3, h4')).map(h => ({
+                level: parseInt(h.tagName.replace('H', '')),
+                text: h.innerText,
+                id: h.id
+            }));
+
+            const tocHtml = generateNestedTOC(headers);
+            document.getElementById('toc-container').innerHTML = tocHtml;
+
+            // 滚动自动点亮
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const currentId = entry.target.id;
+                        console.log(currentId);
+
+                        // 1. 点亮目录项样式
+                        document.querySelectorAll('.toc-link').forEach(link => {
+                            link.classList.toggle('active', link.dataset.id === currentId);
+                        });
+
+                        // 2. 自动更新地址栏（?id=xxx）
+                        switchUrlId(currentId);
+                    }
+                });
+            }, { rootMargin: '-10% 0px -85% 0px' });
+
+            document.querySelectorAll('h1, h2, h3, h4').forEach(h => observer.observe(h));
         }
 
         // 3. 监听 hash 变化
@@ -330,7 +394,7 @@
             if (qs.id) {
                 const element = document.getElementById(qs.id);
                 if (element) {
-                    if (qs.keyword) {                        
+                    if (qs.keyword) {
                         highlightKeywords(qs.keyword, content);
                     }
                     // 滚动到高亮位置
@@ -338,7 +402,6 @@
                 }
             }
         });
-
 
         // 搜索功能
         async function search(keyword) {
