@@ -293,10 +293,10 @@
         // http://127.0.0.1:5500/src/index.html
         // http://127.0.0.1:5500/src/index.html#/docs/webgpu.md
         // 重定向
-        if (!location.href.includes('index.html#/')) {
-            const url = location.href.replace(/\/src\/.*/, '/src/index.html#/docs/webgpu.md')
-            location.href = url
-        }
+        // if (!location.href.includes('index.html#/')) {
+        //     const url = location.href.replace(/\/src\/.*/, '/src/index.html#/docs/webgpu.md')
+        //     location.href = url
+        // }
 
         // 配置 marked 使用 highlight.js 
         marked.setOptions({
